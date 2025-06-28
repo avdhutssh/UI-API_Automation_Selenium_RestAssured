@@ -30,7 +30,7 @@
     <allure.version>2.29.0</allure.version>
     <allure-testng.version>2.29.0</allure-testng.version>
     <allure-rest-assured.version>2.29.0</allure-rest-assured.version>
-    <aspectj.version>1.9.24</aspectj.version>
+    <aspectj.version>1.9.19</aspectj.version>
     <lombok.version>1.18.34</lombok.version>
     <commons-io.version>2.17.0</commons-io.version>
     <java-faker.version>1.0.2</java-faker.version>
