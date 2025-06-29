@@ -11,6 +11,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -37,7 +38,95 @@ public class standAloneScripts {
     TakesScreenshot ts;
     Logger logger;
 
-    //TODO: before suite to delete the all orders via API
+    @AfterSuite
+    public void suiteCleanup() {
+        logger.info("Starting test suite cleanup - deleting all orders created during test execution");
+        try {
+            // Login to get token and userId
+            String requestBody = "{" +
+                    "\"userEmail\": \"" + EMAIL + "\"," +
+                    "\"userPassword\": \"" + PASSWORD + "\"" +
+                    "}";
+
+            Response loginResponse = RestAssured.given()
+                    .contentType("application/json")
+                    .body(requestBody)
+                    .when()
+                    .post("/api/ecom/auth/login")
+                    .then()
+                    .extract().response();
+
+            if (loginResponse.statusCode() != 200) {
+                logger.warning("Failed to login for cleanup. Status code: " + loginResponse.statusCode());
+                return;
+            }
+
+            String apiToken = loginResponse.jsonPath().getString("token");
+            String userId = loginResponse.jsonPath().getString("userId");
+            logger.info("Successfully logged in for cleanup. User ID: " + userId);
+
+            // Get all orders for the customer
+            Response ordersResponse = RestAssured.given()
+                    .header("Authorization", apiToken)
+                    .header("Accept", "application/json, text/plain, */*")
+                    .pathParam("userId", userId)
+                    .when()
+                    .get("/api/ecom/order/get-orders-for-customer/{userId}")
+                    .then()
+                    .extract().response();
+
+            if (ordersResponse.statusCode() != 200) {
+                logger.warning("Failed to fetch orders for cleanup. Status code: " + ordersResponse.statusCode());
+                return;
+            }
+
+            List<Map<String, Object>> orders = ordersResponse.jsonPath().getList("data");
+            if (orders == null || orders.isEmpty()) {
+                logger.info("No orders found to cleanup");
+                return;
+            }
+
+            logger.info("Found " + orders.size() + " orders to cleanup");
+
+            // Delete each order
+            int deletedCount = 0;
+            for (Map<String, Object> order : orders) {
+                String currentOrderId = (String) order.get("_id");
+                try {
+                    Response deleteResponse = RestAssured.given()
+                            .header("Authorization", apiToken)
+                            .pathParam("orderId", currentOrderId)
+                            .when()
+                            .delete("/api/ecom/order/delete-order/{orderId}")
+                            .then()
+                            .extract().response();
+
+                    if (deleteResponse.statusCode() == 200) {
+                        String message = deleteResponse.jsonPath().getString("message");
+                        if ("Orders Deleted Successfully".equals(message)) {
+                            logger.info("✅ Successfully deleted order: " + currentOrderId);
+                            deletedCount++;
+                        } else {
+                            logger.warning("⚠️ Unexpected response for order deletion: " + currentOrderId + " - " + message);
+                        }
+                    } else {
+                        logger.warning("❌ Failed to delete order: " + currentOrderId + " - Status: " + deleteResponse.statusCode());
+                    }
+                } catch (Exception e) {
+                    logger.warning("❌ Exception while deleting order: " + currentOrderId + " - " + e.getMessage());
+                }
+            }
+
+            logger.info("Cleanup completed. Successfully deleted " + deletedCount + " out of " + orders.size() + " orders");
+
+        } catch (Exception e) {
+            logger.warning("Failed to perform suite cleanup: " + e.getMessage());
+        } finally {
+            RestAssured.reset();
+            logger.info("REST Assured configuration reset");
+        }
+    }
+
     @BeforeMethod
     public void setup(Method method) {
         logger = Logger.getLogger(standAloneScripts.class.getName());
@@ -64,7 +153,7 @@ public class standAloneScripts {
             js = (JavascriptExecutor) driver;
             act = new Actions(driver);
         } else if (methodName.contains("API") || methodName.contains("Rest") || methodName.contains("Service")) {
-            logger.info("Setting up REST Assured for API test: " + methodName);
+            logger.info("Setting up REST Assured base URI for the test suite");
             RestAssured.baseURI = BASE_URL;
         }
     }
@@ -75,12 +164,10 @@ public class standAloneScripts {
         if (methodName.contains("UI") || methodName.contains("web") || methodName.contains("e2e") && driver != null) {
             driver.quit();
             logger.info("Browser closed for UI test: " + methodName);
-        } else if (methodName.contains("API")) {
-            RestAssured.reset();
         }
     }
 
-    @Test
+    @Test(priority = 1)
     public void test_01_UI_verifyValidLogin() {
         logger.info("Starting test for valid login credentials.");
         loginToApplication(EMAIL, PASSWORD);
@@ -89,7 +176,7 @@ public class standAloneScripts {
         logger.info("Login successful with valid credentials.");
     }
 
-    @Test
+    @Test(priority = 2)
     public void test_02_UI_verifyInvalidLogin() {
         logger.info("Starting test for Invalid login credentials.");
         loginToApplication("invalidemail@gmail.com", "gjhjhkhkj");
@@ -99,7 +186,7 @@ public class standAloneScripts {
         logger.info("Login failed as expected with invalid credentials.");
     }
 
-    @Test(dataProvider = "csvFileReader", dataProviderClass = CsvDataProviders.class)
+    @Test(dataProvider = "csvFileReader", dataProviderClass = CsvDataProviders.class, priority = 3)
     public void test_03_API_verifyMultipleInvalidLoginAttempts(Map<String, String> testData) {
         String testScenario = testData.get("testScenario");
         String invalidEmail = testData.get("userEmail");
@@ -129,7 +216,7 @@ public class standAloneScripts {
         logger.info("API response validated for invalid login attempt: " + testScenario);
     }
 
-    @Test
+    @Test(priority = 4)
     public void test_04_UI_searchProductAndVerify() {
         logger.info("Starting test to search for a product and verify its presence.");
         loginToApplication(EMAIL, PASSWORD);
@@ -141,8 +228,8 @@ public class standAloneScripts {
     }
 
     //TODO: Add Multiple product search and add combinations and verify count number, multiple product in cart
-    @Test
-    public void test_05_UI_verifyAddedItemsArePresentInCart() {
+    @Test(priority = 5)
+    public void test_05_UI_verifyAddedItemsArePresentInCart() throws InterruptedException {
         logger.info("Starting test to verify added items are present in the cart.");
         loginToApplication(EMAIL, PASSWORD);
         WebElement addToCartBtn = wait.until(ExpectedConditions.elementToBeClickable(
@@ -156,7 +243,8 @@ public class standAloneScripts {
         }
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[aria-label='Product Added To Cart']")));
         wait.until(ExpectedConditions.invisibilityOfElementLocated(By.cssSelector("[aria-label='Product Added To Cart']")));
-        js.executeScript("window.scrollBy(0, -500);");
+        js.executeScript("window.scrollBy(0, -1500);");
+        Thread.sleep(500);
         WebElement cartBtn = driver.findElement(By.cssSelector("[routerlink*='cart']"));
         Assert.assertEquals(cartBtn.findElement(By.cssSelector("label")).getText(), "1");
         cartBtn.click();
@@ -168,14 +256,15 @@ public class standAloneScripts {
         logger.info("Items in the cart verified successfully.");
     }
 
-    @Test
-    public void test_06_UI_verifyRemoveCartItem() {
+    @Test(priority = 6)
+    public void test_06_UI_verifyRemoveCartItem() throws InterruptedException {
         logger.info("Starting test to verify removal of cart item.");
         loginToApplication(EMAIL, PASSWORD);
         WebElement addToCartBtn = wait.until(ExpectedConditions.elementToBeClickable(
                 By.xpath("//*[normalize-space(text())='" + PRODUCT_NAME + "']/../following-sibling::button[normalize-space(text())='Add To Cart']")));
         js.executeScript("arguments[0].scrollIntoView(true);", addToCartBtn);
-        js.executeScript("window.scrollBy(0, 500);");
+        js.executeScript("window.scrollBy(0, -1500);");
+        Thread.sleep(1000);
         try {
             addToCartBtn.click();
         } catch (Exception e) {
@@ -203,7 +292,7 @@ public class standAloneScripts {
         logger.info("Cart item removal verified successfully.");
     }
 
-    @Test
+    @Test(priority = 7)
     public void test_07_e2e_verifyCompleteOrderFlow() throws InterruptedException {
         logger.info("Starting complete E2E order flow test.");
         loginToApplication(EMAIL, PASSWORD);
@@ -278,7 +367,7 @@ public class standAloneScripts {
         logger.info("E2E Complete Order Flow Test Completed Successfully!");
     }
 
-    @Test(dependsOnMethods = "test_07_e2e_verifyCompleteOrderFlow")
+    @Test(dependsOnMethods = "test_07_e2e_verifyCompleteOrderFlow", priority = 8)
     public void test_08_API_verifyOrderHistory() {
         logger.info("Starting API test to verify order history.");
         if (orderId == null || orderId.isEmpty()) {
