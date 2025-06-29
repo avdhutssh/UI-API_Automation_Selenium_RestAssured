@@ -115,4 +115,15 @@ public class standAloneScripts {
         driver.findElement(By.cssSelector("#userPassword")).sendKeys(password);
         driver.findElement(By.cssSelector("#login")).click();
     }
+
+    @Test
+    public void test_04_UI_searchProductAndVerify() {
+        logger.info("Starting test to search for a product and verify its presence.");
+        loginToApplication(EMAIL, PASSWORD);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("(//input[@name='search'])[2]"))).sendKeys(PRODUCT_NAME);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("(//input[@name='search'])[2]"))).sendKeys(Keys.ENTER);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".card-img-top")));
+        Assert.assertTrue(driver.findElement(By.xpath("//*[contains(text(),'ZARA')]")).isDisplayed());
+        logger.info("Product search and verification completed successfully.");
+    }
 }
