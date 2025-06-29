@@ -1,0 +1,6 @@
+testScenario,userEmail,userPassword,statusCode,errorMsg
+InvalidCredentials,invalid@example.com,wrongpassword123,400,Incorrect email or password.
+ValidEmailInvalidPassword,av1234@gmail.com,incorrectPassword,400,Incorrect email or password.
+InvalidEmailValidPassword,wrongemail@test.com,Bulbul@123,400,Incorrect email or password.
+EmptyEmail,, somepassword123,400,Email is required
+EmptyPassword,test@domain.com,,400,Password is required
