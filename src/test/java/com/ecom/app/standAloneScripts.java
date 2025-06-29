@@ -278,6 +278,81 @@ public class standAloneScripts {
         logger.info("E2E Complete Order Flow Test Completed Successfully!");
     }
 
+    @Test(dependsOnMethods = "test_07_e2e_verifyCompleteOrderFlow")
+    public void test_08_API_verifyOrderHistory() {
+        logger.info("Starting API test to verify order history.");
+        if (orderId == null || orderId.isEmpty()) {
+            logger.warning("Order ID is not set. Skipping order history verification.");
+            return;
+        }
+
+        String requestBody = "{" +
+                "\"userEmail\": \"" + EMAIL + "\"," +
+                "\"userPassword\": \"" + PASSWORD + "\"" +
+                "}";
+        Response loginResponse = RestAssured.given()
+                .contentType("application/json")
+                .body(requestBody)
+                .log().all()
+                .when()
+                .post("/api/ecom/auth/login")
+                .then()
+                .log().all()
+                .extract().response();
+
+        String apiToken = loginResponse.jsonPath().getString("token");
+        String userId = loginResponse.jsonPath().getString("userId");
+        logger.info("API Token obtained for order verification");
+        logger.info("User ID: " + userId);
+
+        Response response = RestAssured.given()
+                .header("Authorization", apiToken)
+                .header("Accept", "application/json, text/plain, */*")
+                .pathParam("userId", userId)
+                .log().all()
+                .when()
+                .get("/api/ecom/order/get-orders-for-customer/{userId}")
+                .then()
+                .log().all()
+                .extract().response();
+
+        Assert.assertEquals(response.jsonPath().getString("message"), "Orders fetched for customer Successfully");
+
+        List<Map<String, Object>> orders = response.jsonPath().getList("data");
+        Assert.assertTrue(orders.size() > 0, "Customer should have at least one order");
+        Map<String, Object> targetOrder = null;
+        boolean orderFound = false;
+
+        for (Map<String, Object> order : orders) {
+            String currentOrderId = (String) order.get("_id");
+            logger.info("Checking order ID: " + currentOrderId);
+
+            if (currentOrderId.equals(orderId)) {
+                targetOrder = order;
+                orderFound = true;
+                logger.info("✅ Found matching order: " + orderId);
+                break;
+            }
+        }
+
+        Assert.assertTrue(orderFound, "Order ID " + orderId + " should be present in the order history.");
+        Assert.assertNotNull(targetOrder, "Target order should not be null");
+
+        String actualOrderBy = (String) targetOrder.get("orderBy");
+        String actualProductName = (String) targetOrder.get("productName");
+        String actualCountry = (String) targetOrder.get("country");
+        String actualOrderById = (String) targetOrder.get("orderById");
+
+        Assert.assertEquals(actualOrderBy, EMAIL, "Order should be placed by the correct user");
+        Assert.assertEquals(actualProductName, PRODUCT_NAME, "Product name should match");
+        Assert.assertEquals(actualCountry, COUNTRY_NAME, "Country should match");
+        Assert.assertEquals(actualOrderById, userId, "Order should be placed by the correct user ID");
+
+        String orderPrice = (String) targetOrder.get("orderPrice");
+        Assert.assertNotNull(orderPrice, "Order should have orderPrice");
+
+        logger.info("API order history verification completed successfully!");
+    }
 
     private void loginToApplication(String email, String password) {
         logger.info("Logging into the application.");
