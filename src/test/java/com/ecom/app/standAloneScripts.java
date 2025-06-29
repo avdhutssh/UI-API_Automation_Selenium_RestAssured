@@ -152,7 +152,40 @@ public class standAloneScripts {
         logger.info("Items in the cart verified successfully.");
     }
 
-   
+    @Test
+    public void test_06_UI_verifyRemoveCartItem() {
+        logger.info("Starting test to verify removal of cart item.");
+        loginToApplication(EMAIL, PASSWORD);
+        WebElement addToCartBtn = wait.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//*[normalize-space(text())='" + PRODUCT_NAME + "']/../following-sibling::button[normalize-space(text())='Add To Cart']")));
+        js.executeScript("arguments[0].scrollIntoView(true);", addToCartBtn);
+        js.executeScript("window.scrollBy(0, 500);");
+        try {
+            addToCartBtn.click();
+        } catch (Exception e) {
+            jsClick(addToCartBtn);
+        }
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[aria-label='Product Added To Cart']")));
+        wait.until(ExpectedConditions.invisibilityOfElementLocated(By.cssSelector("[aria-label='Product Added To Cart']")));
+        js.executeScript("window.scrollBy(0, -500);");
+        WebElement cartBtn = driver.findElement(By.cssSelector("[routerlink*='cart']"));
+        Assert.assertEquals(cartBtn.findElement(By.cssSelector("label")).getText(), "1");
+        cartBtn.click();
+        List<WebElement> items = driver.findElements(By.xpath("//h3[contains(text(),'" + PRODUCT_NAME + "')]"));
+        wait.until(ExpectedConditions.visibilityOf(items.get(0)));
+        Assert.assertTrue(items.get(0).isDisplayed(),
+                "Product " + PRODUCT_NAME + " is not present in the cart.");
+        WebElement removeBtn = driver.findElement(By.xpath("//button[contains(@class,'btn btn-danger')]"));
+        removeBtn.click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[@aria-label='No Product in Your Cart']")));
+        Assert.assertTrue(driver.findElement(By.xpath("//*[@aria-label='No Product in Your Cart']")).isDisplayed(),
+                "Product " + PRODUCT_NAME + " is still present in the cart after removal.");
+        wait.until(ExpectedConditions.invisibilityOf(items.get(0)));
+        Assert.assertEquals(driver.findElements(By.xpath("//h3[contains(text(),'" + PRODUCT_NAME + "')]")).size(), 0,
+                "Product " + PRODUCT_NAME + " is still present in the cart after removal.");
+
+        logger.info("Cart item removal verified successfully.");
+    }
 
     private void loginToApplication(String email, String password) {
         logger.info("Logging into the application.");
