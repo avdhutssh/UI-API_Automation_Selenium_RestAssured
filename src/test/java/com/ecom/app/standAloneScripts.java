@@ -5,6 +5,7 @@ import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
@@ -14,6 +15,7 @@ import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -28,6 +30,7 @@ public class standAloneScripts {
     WebDriver driver;
     WebDriverWait wait;
     JavascriptExecutor js;
+    Actions act;
     TakesScreenshot ts;
     Logger logger;
 
@@ -42,6 +45,8 @@ public class standAloneScripts {
             driver.get(BASE_URL + "/client");
             driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
             wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+            js = (JavascriptExecutor) driver;
+            act = new Actions(driver);
         } else if (methodName.contains("API") || methodName.contains("Rest") || methodName.contains("Service")) {
             logger.info("Setting up REST Assured for API test: " + methodName);
             RestAssured.baseURI = BASE_URL;
@@ -108,14 +113,6 @@ public class standAloneScripts {
         logger.info("API response validated for invalid login attempt: " + testScenario);
     }
 
-
-    private void loginToApplication(String email, String password) {
-        logger.info("Logging into the application.");
-        driver.findElement(By.cssSelector("#userEmail")).sendKeys(email);
-        driver.findElement(By.cssSelector("#userPassword")).sendKeys(password);
-        driver.findElement(By.cssSelector("#login")).click();
-    }
-
     @Test
     public void test_04_UI_searchProductAndVerify() {
         logger.info("Starting test to search for a product and verify its presence.");
@@ -125,5 +122,47 @@ public class standAloneScripts {
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".card-img-top")));
         Assert.assertTrue(driver.findElement(By.xpath("//*[contains(text(),'ZARA')]")).isDisplayed());
         logger.info("Product search and verification completed successfully.");
+    }
+
+    //TODO: Add Multiple product search and add combinations and verify count number, multiple product in cart
+    @Test
+    public void test_05_UI_verifyAddedItemsArePresentInCart() {
+        logger.info("Starting test to verify added items are present in the cart.");
+        loginToApplication(EMAIL, PASSWORD);
+        WebElement addToCartBtn = wait.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//*[normalize-space(text())='" + PRODUCT_NAME + "']/../following-sibling::button[normalize-space(text())='Add To Cart']")));
+        js.executeScript("arguments[0].scrollIntoView(true);", addToCartBtn);
+        js.executeScript("window.scrollBy(0, 500);");
+        try {
+            addToCartBtn.click();
+        } catch (Exception e) {
+            jsClick(addToCartBtn);
+        }
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[aria-label='Product Added To Cart']")));
+        wait.until(ExpectedConditions.invisibilityOfElementLocated(By.cssSelector("[aria-label='Product Added To Cart']")));
+        js.executeScript("window.scrollBy(0, -500);");
+        WebElement cartBtn = driver.findElement(By.cssSelector("[routerlink*='cart']"));
+        Assert.assertEquals(cartBtn.findElement(By.cssSelector("label")).getText(), "1");
+        cartBtn.click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//h3[contains(text(),'" + PRODUCT_NAME + "')]")));
+        Assert.assertTrue(driver.findElement(By.xpath("//h3[contains(text(),'" + PRODUCT_NAME + "')]")).isDisplayed(),
+                "Product " + PRODUCT_NAME + " is not present in the cart.");
+        int productCount = driver.findElements(By.xpath("//h3[contains(text(),'" + PRODUCT_NAME + "')]")).size();
+        Assert.assertTrue(productCount == 1, "No products found in the cart.");
+        logger.info("Items in the cart verified successfully.");
+    }
+
+   
+
+    private void loginToApplication(String email, String password) {
+        logger.info("Logging into the application.");
+        driver.findElement(By.cssSelector("#userEmail")).sendKeys(email);
+        driver.findElement(By.cssSelector("#userPassword")).sendKeys(password);
+        driver.findElement(By.cssSelector("#login")).click();
+    }
+
+    private void jsClick(WebElement element) {
+        logger.info("Performing JavaScript click on element: " + element);
+        js.executeScript("arguments[0].click();", element);
     }
 }
