@@ -5,6 +5,7 @@ import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -15,6 +16,7 @@ import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -26,6 +28,7 @@ public class standAloneScripts {
     String PASSWORD = "Bulbul@123";
     String PRODUCT_NAME = "ZARA COAT 3";
     String COUNTRY_NAME = "India";
+    String orderId;
 
     WebDriver driver;
     WebDriverWait wait;
@@ -34,13 +37,26 @@ public class standAloneScripts {
     TakesScreenshot ts;
     Logger logger;
 
+    //TODO: before suite to delete the all orders via API
     @BeforeMethod
     public void setup(Method method) {
         logger = Logger.getLogger(standAloneScripts.class.getName());
         String methodName = method.getName();
         if (methodName.contains("UI") || methodName.contains("web") || methodName.contains("e2e")) {
             logger.info("Setting up WebDriver for UI/e2e test: " + methodName);
-            driver = new ChromeDriver();
+
+            ChromeOptions options = new ChromeOptions();
+            options.addArguments("--disable-save-password-bubble");
+            options.addArguments("--disable-autofill");
+            options.addArguments("--disable-autofill-keyboard-accessory-view");
+            options.addArguments("--disable-full-form-autofill-ios");
+            options.addArguments("--disable-payments-autofill");
+            options.addArguments("--disable-web-security");
+            options.addArguments("--disable-features=VizDisplayCompositor");
+            options.addArguments("--disable-popup-blocking");
+            options.setExperimentalOption("prefs", Collections.singletonMap("autofill.credit_card_enabled", false));
+
+            driver = new ChromeDriver(options);
             driver.manage().window().maximize();
             driver.get(BASE_URL + "/client");
             driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
@@ -187,6 +203,82 @@ public class standAloneScripts {
         logger.info("Cart item removal verified successfully.");
     }
 
+    @Test
+    public void test_07_e2e_verifyCompleteOrderFlow() throws InterruptedException {
+        logger.info("Starting complete E2E order flow test.");
+        loginToApplication(EMAIL, PASSWORD);
+        WebElement searchBox = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("(//input[@name='search'])[2]")));
+        searchBox.sendKeys(PRODUCT_NAME);
+        searchBox.sendKeys(Keys.ENTER);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".card-img-top")));
+        Assert.assertTrue(driver.findElement(By.xpath("//*[contains(text(),'ZARA')]")).isDisplayed());
+        Thread.sleep(500);
+        WebElement addToCartBtn = wait.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//*[normalize-space(text())='" + PRODUCT_NAME + "']/../following-sibling::button[normalize-space(text())='Add To Cart']")));
+        addToCartBtn.click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[aria-label='Product Added To Cart']")));
+        WebElement cartBtn = driver.findElement(By.cssSelector("[routerlink*='cart']"));
+        cartBtn.click();
+        Thread.sleep(500);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//h3[contains(text(),'" + PRODUCT_NAME + "')]")));
+        Assert.assertTrue(driver.findElement(By.xpath("//h3[contains(text(),'" + PRODUCT_NAME + "')]")).isDisplayed(),
+                "Product " + PRODUCT_NAME + " should be present in cart");
+        js.executeScript("window.scrollTo(0, document.body.scrollHeight);");
+        WebElement checkoutBtn = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[contains(text(), 'Checkout')]")));
+        checkoutBtn.click();
+        Thread.sleep(500);
+        WebElement countryField = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[placeholder*='Country']")));
+        for (char c : COUNTRY_NAME.toCharArray()) {
+            countryField.sendKeys(String.valueOf(c));
+            Thread.sleep(50);
+        }
+        WebElement countryOption = wait.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//span[normalize-space(text())='" + COUNTRY_NAME + "']")));
+        countryOption.click();
+        WebElement cardNumberField = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("(//input[@type='text'])[1]")));
+        cardNumberField.clear();
+        cardNumberField.sendKeys("4242424242424242");
+        WebElement cvvField = driver.findElement(By.xpath("(//input[@type='text'])[2]"));
+        cvvField.clear();
+        cvvField.sendKeys("123");
+
+        WebElement nameField = driver.findElement(By.xpath("(//input[@type='text'])[3]"));
+        nameField.clear();
+        nameField.sendKeys("Test User");
+        js.executeScript("window.scrollTo(0, document.body.scrollHeight);");
+        Thread.sleep(500);
+        WebElement placeOrderBtn = wait.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//*[normalize-space(text())='Place Order']")));
+
+        placeOrderBtn.click();
+        Thread.sleep(500);
+        WebElement confirmationElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.tagName("h1")));
+        Assert.assertEquals(confirmationElement.getText().trim(), "THANKYOU FOR THE ORDER.", "Order confirmation message should be displayed");
+
+        String orderText = driver.findElement(By.xpath("//label[@class='ng-star-inserted']")).getText().trim();
+        orderId = orderText.replaceAll("[^a-zA-Z0-9]", "");
+        logger.info("Order ID: " + orderId);
+        js.executeScript("window.scrollTo(0, -500);");
+        WebElement orderBtn = driver.findElement(By.xpath("//*[normalize-space(text())='Orders History Page']"));
+        orderBtn.click();
+        Thread.sleep(500);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//h1[contains(text(),'Your Orders')]")));
+        List<WebElement> orderList = driver.findElements(By.xpath("//th[@scope='row']"));
+        boolean orderFound = false;
+        for (WebElement order : orderList) {
+            System.out.println("Order ID in history: " + order.getText());
+            if (order.getText().equals(orderId)) {
+                orderFound = true;
+                break;
+            }
+        }
+        Assert.assertTrue(orderFound, "Order ID " + orderId + " should be present in the order history.");
+        logger.info("E2E Complete Order Flow Test Completed Successfully!");
+    }
+
+
     private void loginToApplication(String email, String password) {
         logger.info("Logging into the application.");
         driver.findElement(By.cssSelector("#userEmail")).sendKeys(email);
@@ -198,4 +290,5 @@ public class standAloneScripts {
         logger.info("Performing JavaScript click on element: " + element);
         js.executeScript("arguments[0].click();", element);
     }
+
 }
