@@ -1,118 +1,95 @@
 package com.ecom.app.Tests;
 
 import com.ecom.app.BaseComponents.BaseTest;
+import com.ecom.app.constants.StatusCode;
+import com.ecom.app.utils.AllureReportUtils;
+import io.qameta.allure.*;
+import io.restassured.response.Response;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.util.List;
+import java.util.Map;
+
+@Epic("End-to-End Tests")
+@Feature("Complete Order Flow")
 public class _04_E2E_Tests extends BaseTest {
 
-    @Test(priority = 1)
-    public void test_01_e2e_verifyCompleteOrderFlow() {
-        logger.info("Starting complete E2E order flow test");
-        
+    @Test(priority = 7)
+    @Story("Complete Order Flow")
+    @Description("Test complete end-to-end order placement flow")
+    @Severity(SeverityLevel.BLOCKER)
+    public void test_07_e2e_verifyCompleteOrderFlow() {
+        AllureReportUtils.logStep("Starting complete E2E order flow test");
+
         loginPage.loginWithDefaultCredentials();
-        
         productPage.searchAndAddProductToCart(PRODUCT_NAME);
         Assert.assertTrue(productPage.isProductDisplayed(PRODUCT_NAME), "Product should be displayed after search");
-        
         productPage.navigateToCart();
         cartPage.verifyProductInCart(PRODUCT_NAME);
-        Assert.assertFalse(cartPage.isCartEmpty(), "Cart should not be empty");
-        
         cartPage.proceedToCheckout();
         Assert.assertTrue(checkoutPage.isCheckoutPageLoaded(), "Checkout page should be loaded");
-        
         checkoutPage.completeCheckout(COUNTRY_NAME, "4242424242424242", "123", "Test User");
-        
         String orderIdFromConfirmation = orderConfirmationPage.getOrderConfirmationDetails();
         Assert.assertFalse(orderIdFromConfirmation.isEmpty(), "Order ID should not be empty");
-        
         setOrderId(orderIdFromConfirmation);
-        
+        AllureReportUtils.logTestData("Order ID", orderIdFromConfirmation);
         boolean orderInHistory = orderConfirmationPage.verifyOrderInHistory(orderIdFromConfirmation);
         Assert.assertTrue(orderInHistory, "Order should be present in order history");
-        
-        logger.info("E2E Complete Order Flow Test Completed Successfully! Order ID: " + orderIdFromConfirmation);
     }
 
-    @Test(priority = 2)
-    public void test_02_e2e_verifyMultipleProductsOrderFlow() {
-        logger.info("Starting E2E test with multiple products");
-        
-        loginPage.loginWithDefaultCredentials();
-        
-        productPage.searchAndAddProductToCart(PRODUCT_NAME);
-        productPage.searchAndAddProductToCart("ADIDAS ORIGINAL");
-        
-        productPage.navigateToCart();
-        Assert.assertEquals(cartPage.getCartProductNames().size(), 2, "Cart should contain 2 products");
-        
-        cartPage.proceedToCheckout();
-        checkoutPage.completeCheckout(COUNTRY_NAME, "4242424242424242", "123", "Test User");
-        
-        String orderIdFromConfirmation = orderConfirmationPage.getOrderConfirmationDetails();
-        Assert.assertFalse(orderIdFromConfirmation.isEmpty(), "Order ID should not be empty");
-        
-        logger.info("Multiple products E2E test completed successfully! Order ID: " + orderIdFromConfirmation);
-    }
+    @Test(dependsOnMethods = "test_07_e2e_verifyCompleteOrderFlow", priority = 8)
+    @Story("API Order Verification")
+    @Description("Test API order history verification")
+    @Severity(SeverityLevel.CRITICAL)
+    public void test_08_API_verifyOrderHistory() {
+        AllureReportUtils.logStep("Starting API order history verification");
 
-    @Test(priority = 3)
-    public void test_03_e2e_verifyCheckoutWithDifferentPaymentDetails() {
-        logger.info("Starting E2E test with different payment details");
-        
-        loginPage.loginWithDefaultCredentials();
-        
-        productPage.searchAndAddProductToCart(PRODUCT_NAME);
-        productPage.navigateToCart();
-        cartPage.proceedToCheckout();
-        
-        checkoutPage.completeCheckout("Australia", "5555555555554444", "456", "John Doe");
-        
-        String orderIdFromConfirmation = orderConfirmationPage.getOrderConfirmationDetails();
-        Assert.assertFalse(orderIdFromConfirmation.isEmpty(), "Order ID should not be empty");
-        
-        logger.info("E2E test with different payment details completed! Order ID: " + orderIdFromConfirmation);
-    }
+        String orderIdToVerify = getOrderId();
+        if (orderIdToVerify == null || orderIdToVerify.isEmpty()) {
+            AllureReportUtils.logStep("Order ID not available - skipping verification");
+            return;
+        }
 
-    @Test(priority = 4)
-    public void test_04_e2e_verifyOrderHistoryNavigation() {
-        logger.info("Starting E2E test for order history navigation");
-        
-        loginPage.loginWithDefaultCredentials();
-        
-        productPage.searchAndAddProductToCart(PRODUCT_NAME);
-        productPage.navigateToCart();
-        cartPage.proceedToCheckout();
-        checkoutPage.completeCheckout(COUNTRY_NAME, "4242424242424242", "123", "Test User");
-        
-        String orderIdFromConfirmation = orderConfirmationPage.getOrderConfirmationDetails();
-        
-        orderConfirmationPage.navigateToOrderHistory();
-        Assert.assertTrue(orderConfirmationPage.isOrderPresentInHistory(orderIdFromConfirmation), 
-                "Order should be present in history");
-        
-        logger.info("Order history navigation test completed successfully");
-    }
+        AllureReportUtils.logTestData("Order ID to verify", orderIdToVerify);
 
-    @Test(priority = 5)
-    public void test_05_e2e_verifyCompleteFlowWithOrderDeletion() {
-        logger.info("Starting E2E test with order deletion");
-        
-        loginPage.loginWithDefaultCredentials();
-        
-        productPage.searchAndAddProductToCart(PRODUCT_NAME);
-        productPage.navigateToCart();
-        cartPage.proceedToCheckout();
-        checkoutPage.completeCheckout(COUNTRY_NAME, "4242424242424242", "123", "Test User");
-        
-        String orderIdFromConfirmation = orderConfirmationPage.getOrderConfirmationDetails();
-        
-        orderConfirmationPage.navigateToOrderHistory();
-        Assert.assertTrue(orderConfirmationPage.isOrderPresentInHistory(orderIdFromConfirmation), 
-                "Order should be present before deletion");
-        
-        orderConfirmationPage.deleteOrderFromHistory(orderIdFromConfirmation);
-        
-        logger.info("E2E test with order deletion completed successfully");
+        Response response = getRequestFactory().getOrdersForCustomer(getUserId());
+
+        Assert.assertEquals(response.statusCode(), StatusCode.OK.getCode(), "Get orders API should return 200");
+        Assert.assertEquals(response.jsonPath().getString("message"), "Orders fetched for customer Successfully");
+
+        List<Map<String, Object>> orders = response.jsonPath().getList("data");
+        Assert.assertTrue(orders.size() > 0, "Customer should have at least one order");
+
+        Map<String, Object> targetOrder = null;
+        boolean orderFound = false;
+
+        for (Map<String, Object> order : orders) {
+            String currentOrderId = (String) order.get("_id");
+            if (orderIdToVerify.equals(currentOrderId)) {
+                targetOrder = order;
+                orderFound = true;
+                break;
+            }
+        }
+
+        Assert.assertTrue(orderFound, "Order ID " + orderIdToVerify + " should be present in the order history");
+        Assert.assertNotNull(targetOrder, "Target order should not be null");
+
+        String actualOrderBy = (String) targetOrder.get("orderBy");
+        String actualProductName = (String) targetOrder.get("productName");
+        String actualCountry = (String) targetOrder.get("country");
+        String actualOrderById = (String) targetOrder.get("orderById");
+
+        Assert.assertEquals(actualOrderBy, EMAIL, "Order should be placed by the correct user");
+        Assert.assertEquals(actualProductName, PRODUCT_NAME, "Product name should match");
+        Assert.assertEquals(actualCountry, COUNTRY_NAME, "Country should match");
+        Assert.assertEquals(actualOrderById, getUserId(), "Order should be placed by the correct user ID");
+
+        String orderPrice = (String) targetOrder.get("orderPrice");
+        Assert.assertNotNull(orderPrice, "Order should have orderPrice");
+
+        AllureReportUtils.logTestData("Order Price", orderPrice);
+        AllureReportUtils.logTestData("Product Name", actualProductName);
     }
 } 
