@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+
+<suite name="Regression Test Suite" verbose="1" parallel="false">
+    <listeners>
+        <listener class-name="com.ecom.app.BaseComponents.TestListener"/>
+    </listeners>
+
+    <test name="RegressionTests" preserve-order="true">
+        <classes>
+            <class name="com.ecom.app.Tests._01_Login_Tests">
+                <methods>
+                    <include name="test_03_API_verifyMultipleInvalidLoginAttempts"/>
+                    <include name="test_04_API_verifyValidLogin"/>
+                    <include name="test_05_API_verifyLoginResponseTime"/>
+                </methods>
+            </class>
+            <class name="com.ecom.app.Tests._02_Product_Tests">
+                <methods>
+                    <include name="test_01_UI_searchProductAndVerify"/>
+                    <include name="test_02_UI_verifyAddProductToCart"/>
+                    <include name="test_03_UI_verifyMultipleProductsAddToCart"/>
+                    <include name="test_04_UI_verifyProductDisplayNames"/>
+                </methods>
+            </class>
+            <class name="com.ecom.app.Tests._03_Cart_Tests">
+                <methods>
+                    <include name="test_02_UI_verifyRemoveCartItem"/>
+                    <include name="test_03_UI_verifyCartTotalPrice"/>
+                    <include name="test_04_UI_verifyMultipleItemsInCart"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+</suite>
+

@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+
+<suite name="Smoke Test Suite" verbose="1" parallel="false">
+    <listeners>
+        <listener class-name="com.ecom.app.BaseComponents.TestListener"/>
+    </listeners>
+
+    <test name="SmokeTests" preserve-order="true">
+        <classes>
+            <class name="com.ecom.app.Tests._01_Login_Tests">
+                <methods>
+                    <include name="test_01_UI_verifyValidLoginAndLogout"/>
+                    <include name="test_02_UI_verifyInvalidLogin"/>
+                </methods>
+            </class>
+            <class name="com.ecom.app.Tests._02_Product_Tests">
+                <methods>
+                    <include name="test_05_UI_verifyProductSearchFunctionality"/>
+                </methods>
+            </class>
+            <class name="com.ecom.app.Tests._03_Cart_Tests">
+                <methods>
+                    <include name="test_01_UI_verifyAddedItemsArePresentInCart"/>
+                    <include name="test_05_UI_verifyClearAllItemsFromCart"/>
+                </methods>
+            </class>
+            <class name="com.ecom.app.Tests._04_E2E_Tests">
+                <methods>
+                    <include name="test_01_e2e_verifyCompleteOrderFlow"/>
+                    <include name="test_02_API_verifyOrderHistory"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+</suite>
+
