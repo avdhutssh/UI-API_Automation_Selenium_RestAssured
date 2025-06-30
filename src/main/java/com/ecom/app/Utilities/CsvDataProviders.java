@@ -13,7 +13,6 @@ import java.util.*;
 import java.util.logging.Logger;
 
 public class CsvDataProviders {
-
     static Logger logger = Logger.getLogger(CsvDataProviders.class.getName());
 
     @DataProvider(name = "csvFileReader")
