@@ -26,10 +26,10 @@ public class ProductPage extends ElementUtils {
 
     public void searchAndAddProductToCart(String productName) {
         logger.info("Searching and adding product to cart: " + productName);
-        
+
         enterText(searchBox, productName, true, true);
         waitForProductsToLoad();
-        
+
         if (isProductDisplayed(productName)) {
             addProductToCart(productName);
             logger.info("Successfully added product to cart: " + productName);
@@ -40,12 +40,12 @@ public class ProductPage extends ElementUtils {
 
     public void addMultipleProductsToCart(List<String> productNames) {
         logger.info("Adding multiple products to cart: " + productNames);
-        
+
         for (String productName : productNames) {
             searchAndAddProductToCart(productName);
             clearText(searchBox);
         }
-        
+
         logger.info("Completed adding " + productNames.size() + " products to cart");
     }
 
@@ -71,6 +71,7 @@ public class ProductPage extends ElementUtils {
     }
 
     public int getCartCount() {
+        waitForElementToBeVisible(cartCount);
         if (isElementDisplayed(cartCount)) {
             String countText = getText(cartCount);
             int count = Integer.parseInt(countText);
