@@ -3,7 +3,8 @@ package com.ecom.app.BaseComponents;
 import com.ecom.app.PageObjects.*;
 import com.ecom.app.Utilities.BrowserDriverFactory;
 import com.ecom.app.Utilities.ConfigurationUtils;
-import com.ecom.app.utils.RestClient;
+import com.ecom.app.generic.RequestFactory;
+import com.ecom.app.utils.AllureReportUtils;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.openqa.selenium.WebDriver;
@@ -29,6 +30,11 @@ public class BaseTest {
     protected CheckoutPage checkoutPage;
     protected OrderConfirmationPage orderConfirmationPage;
 
+    // Enhanced API components
+    protected RequestFactory requestFactory;
+    protected String authToken;
+    protected String userId;
+
     protected final String BASE_URL = ConfigurationUtils.getInstance().getProperty("baseUrl");
     protected final String API_BASE_URL = ConfigurationUtils.getInstance().getProperty("baseApiUrl");
     protected final String EMAIL = ConfigurationUtils.getInstance().getProperty("email");
@@ -42,7 +48,35 @@ public class BaseTest {
     public void suiteSetup() {
         logger.info("=== Test Suite Setup Started ===");
         RestAssured.baseURI = API_BASE_URL;
+        setupEnhancedAPIComponents();
+        
         logger.info("=== Test Suite Setup Completed ===");
+    }
+
+    private void setupEnhancedAPIComponents() {
+        try {
+            logger.info("Setting up enhanced API components");
+            
+            RequestFactory tempFactory = new RequestFactory(null, null);
+            Response loginResponse = tempFactory.login(EMAIL, PASSWORD);
+            
+            if (loginResponse.statusCode() == 200) {
+                authToken = loginResponse.jsonPath().getString("token");
+                userId = loginResponse.jsonPath().getString("userId");
+                
+                requestFactory = new RequestFactory(authToken, userId);
+                
+                logger.info("Enhanced API components setup completed");
+                AllureReportUtils.logStep("API authentication setup completed for test suite");
+                AllureReportUtils.logTestData("User ID", userId);
+            } else {
+                logger.warning("Failed to authenticate for API setup. Status: " + loginResponse.statusCode());
+                throw new RuntimeException("API authentication failed during suite setup");
+            }
+        } catch (Exception e) {
+            logger.severe("Error setting up enhanced API components: " + e.getMessage());
+            throw new RuntimeException("Enhanced API setup failed", e);
+        }
     }
 
     @BeforeMethod
@@ -68,6 +102,7 @@ public class BaseTest {
             }
         } else if (methodName.contains("API") || methodName.contains("api")) {
             logger.info("Setting up API test: " + methodName);
+            AllureReportUtils.logStep("API test setup for: " + methodName);
         }
     }
 
@@ -88,32 +123,40 @@ public class BaseTest {
         logger.info("=== Test Suite Teardown Started ===");
 
         try {
-            Response loginResponse = RestClient.login(EMAIL, PASSWORD);
-
-            if (loginResponse.statusCode() == 200) {
-                String apiToken = loginResponse.jsonPath().getString("token");
-                String userId = loginResponse.jsonPath().getString("userId");
-
-                Response ordersResponse = RestClient.getOrdersForCustomer(apiToken, userId);
+            if (requestFactory != null) {
+                AllureReportUtils.logStep("Starting test data cleanup");
+                
+                Response ordersResponse = requestFactory.getOrdersForCustomer(userId);
 
                 if (ordersResponse.statusCode() == 200) {
                     List<Map<String, Object>> orders = ordersResponse.jsonPath().getList("data");
 
                     if (orders != null && !orders.isEmpty()) {
                         logger.info("Found " + orders.size() + " orders to cleanup");
+                        AllureReportUtils.logTestData("Orders to cleanup", String.valueOf(orders.size()));
 
                         for (Map<String, Object> order : orders) {
                             String orderIdToDelete = (String) order.get("_id");
-                            RestClient.deleteOrder(apiToken, orderIdToDelete);
-                            logger.info("Deleted order: " + orderIdToDelete);
+                            Response deleteResponse = requestFactory.deleteOrder(orderIdToDelete);
+                            if (deleteResponse.statusCode() == 200) {
+                                logger.info("Deleted order: " + orderIdToDelete);
+                            }
                         }
+                        
+                        AllureReportUtils.logStep("Test data cleanup completed successfully");
+                    } else {
+                        logger.info("No orders found for cleanup");
+                        AllureReportUtils.logStep("No test data cleanup required");
                     }
+                } else {
+                    logger.warning("Failed to fetch orders for cleanup. Status: " + ordersResponse.statusCode());
                 }
             }
 
             logger.info("Test data cleanup completed");
         } catch (Exception e) {
             logger.warning("Error during test data cleanup: " + e.getMessage());
+            AllureReportUtils.logError("Cleanup error", e);
         }
 
         RestAssured.reset();
@@ -127,5 +170,17 @@ public class BaseTest {
 
     protected String getOrderId() {
         return this.orderId;
+    }
+
+    protected RequestFactory getRequestFactory() {
+        return requestFactory;
+    }
+
+    protected String getAuthToken() {
+        return authToken;
+    }
+
+    protected String getUserId() {
+        return userId;
     }
 } 
