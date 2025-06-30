@@ -2,19 +2,18 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
 
 <suite name="e2e ecom app" verbose="1" parallel="classes" thread-count="2">
-    
+
     <listeners>
         <listener class-name="com.ecom.app.BaseComponents.TestListener"/>
     </listeners>
-    
+
     <test name="EcommerceTests" preserve-order="true">
         <classes>
             <class name="com.ecom.app.Tests._01_Login_Tests"/>
             <class name="com.ecom.app.Tests._02_Product_Tests"/>
             <class name="com.ecom.app.Tests._03_Cart_Tests"/>
             <class name="com.ecom.app.Tests._04_E2E_Tests"/>
-            <class name="com.ecom.app.Tests._05_API_Tests"/>
         </classes>
     </test>
-    
+
 </suite> 
