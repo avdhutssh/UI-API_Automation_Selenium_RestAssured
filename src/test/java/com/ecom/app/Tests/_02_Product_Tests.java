@@ -12,7 +12,7 @@ import java.util.List;
 @Feature("Product Functionality")
 public class _02_Product_Tests extends BaseTest {
 
-    @Test(priority = 1)
+    @Test(priority = 1, groups = {"regression"})
     @Story("Product Search")
     @Description("Test product search and verification")
     @Severity(SeverityLevel.NORMAL)
@@ -23,7 +23,7 @@ public class _02_Product_Tests extends BaseTest {
         Assert.assertTrue(productPage.isProductDisplayed(PRODUCT_NAME), "Product should be displayed after search");
     }
 
-    @Test(priority = 2)
+    @Test(priority = 2, groups = {"regression"})
     @Story("Add to Cart")
     @Description("Test adding single product to cart")
     @Severity(SeverityLevel.CRITICAL)
@@ -37,7 +37,7 @@ public class _02_Product_Tests extends BaseTest {
         Assert.assertEquals(finalCartCount, 1, "Cart count should increase by 1 after adding product");
     }
 
-    @Test(priority = 3)
+    @Test(priority = 3, groups = {"regression"})
     @Story("Add Multiple Products")
     @Description("Test adding multiple products to cart")
     @Severity(SeverityLevel.NORMAL)
@@ -56,7 +56,7 @@ public class _02_Product_Tests extends BaseTest {
         AllureReportUtils.logTestData("Products Added", String.valueOf(productsToAdd.size()));
     }
 
-    @Test(priority = 4)
+    @Test(priority = 4, groups = {"regression"})
     @Story("Product Display")
     @Description("Test product display names verification")
     @Severity(SeverityLevel.MINOR)
@@ -73,7 +73,7 @@ public class _02_Product_Tests extends BaseTest {
         AllureReportUtils.logTestData("Products Found", String.valueOf(displayedProducts.size()));
     }
 
-    @Test(priority = 5)
+    @Test(priority = 5, groups = {"smoke"})
     @Story("Search Functionality")
     @Description("Test product search functionality validation")
     @Severity(SeverityLevel.NORMAL)

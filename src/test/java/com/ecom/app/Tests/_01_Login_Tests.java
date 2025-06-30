@@ -15,7 +15,7 @@ import java.util.Map;
 @Feature("Login Functionality")
 public class _01_Login_Tests extends BaseTest {
 
-    @Test(priority = 1)
+    @Test(priority = 1, groups = {"smoke"})
     @Story("Valid UI Login")
     @Description("Test successful UI login and logout flow")
     @Severity(SeverityLevel.CRITICAL)
@@ -27,7 +27,7 @@ public class _01_Login_Tests extends BaseTest {
         Assert.assertFalse(loginPage.isUserLoggedIn(), "User should be logged out after sign out");
     }
 
-    @Test(priority = 2)
+    @Test(priority = 2, groups = {"smoke"})
     @Story("Invalid UI Login")
     @Description("Test UI login failure with invalid credentials")
     @Severity(SeverityLevel.NORMAL)
@@ -39,7 +39,7 @@ public class _01_Login_Tests extends BaseTest {
         AllureReportUtils.logTestData("Error Message", errorMessage);
     }
 
-    @Test(dataProvider = "csvFileReader", dataProviderClass = CsvDataProviders.class, priority = 3)
+    @Test(dataProvider = "csvFileReader", dataProviderClass = CsvDataProviders.class, priority = 3, groups = {"regression"})
     @Story("Data-driven API Login")
     @Description("Test API login failure with multiple invalid credential combinations")
     @Severity(SeverityLevel.NORMAL)
@@ -60,7 +60,7 @@ public class _01_Login_Tests extends BaseTest {
         Assert.assertTrue(response.statusLine().contains("Bad Request"), "Expected status line to contain 'Bad Request'");
     }
 
-    @Test(priority = 4)
+    @Test(priority = 4, groups = {"regression"})
     @Story("Valid API Login")
     @Description("Test successful API login and response validation")
     @Severity(SeverityLevel.CRITICAL)
@@ -75,7 +75,7 @@ public class _01_Login_Tests extends BaseTest {
         Assert.assertEquals(response.jsonPath().getString("message"), "Login Successfully", "Expected success message");
     }
 
-    @Test(priority = 5)
+    @Test(priority = 5, groups = {"regression"})
     @Story("API Response Time")
     @Description("Test API login response time validation")
     @Severity(SeverityLevel.MINOR)

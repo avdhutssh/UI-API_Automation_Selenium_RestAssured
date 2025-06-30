@@ -12,7 +12,7 @@ import java.util.List;
 @Feature("Cart Functionality")
 public class _03_Cart_Tests extends BaseTest {
 
-    @Test(priority = 1)
+    @Test(priority = 1, groups = {"smoke"})
     @Story("Cart Verification")
     @Description("Test verifying added items are present in cart")
     @Severity(SeverityLevel.CRITICAL)
@@ -30,7 +30,7 @@ public class _03_Cart_Tests extends BaseTest {
         Assert.assertEquals(cartProducts.size(), 1, "Cart should contain exactly 1 product");
     }
 
-    @Test(priority = 2)
+    @Test(priority = 2, groups = {"regression"})
     @Story("Remove Item")
     @Description("Test removing item from cart")
     @Severity(SeverityLevel.NORMAL)
@@ -47,7 +47,7 @@ public class _03_Cart_Tests extends BaseTest {
         Assert.assertTrue(cartPage.isCartEmpty(), "Cart should be empty after removing all items");
     }
 
-    @Test(priority = 3)
+    @Test(priority = 3, groups = {"regression"})
     @Story("Cart Total")
     @Description("Test cart total price calculation")
     @Severity(SeverityLevel.NORMAL)
@@ -65,7 +65,7 @@ public class _03_Cart_Tests extends BaseTest {
         AllureReportUtils.logTestData("Cart Total", totalPrice);
     }
 
-    @Test(priority = 4)
+    @Test(priority = 4, groups = {"regression"})
     @Story("Multiple Items")
     @Description("Test multiple items in cart verification")
     @Severity(SeverityLevel.NORMAL)
@@ -87,7 +87,7 @@ public class _03_Cart_Tests extends BaseTest {
         AllureReportUtils.logTestData("Items in Cart", String.valueOf(cartProducts.size()));
     }
 
-    @Test(priority = 5)
+    @Test(priority = 5, groups = {"smoke"})
     @Story("Clear Cart")
     @Description("Test clearing all items from cart")
     @Severity(SeverityLevel.NORMAL)
