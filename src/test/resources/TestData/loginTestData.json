@@ -1,0 +1,46 @@
+[
+  {
+    "testScenario": "Valid Login",
+    "userEmail": "av1234@gmail.com",
+    "userPassword": "Bulbul@123",
+    "expectedResult": "success",
+    "statusCode": 200,
+    "description": "Login with valid credentials should succeed"
+  },
+  {
+    "testScenario": "Invalid Email",
+    "userEmail": "invalid@email.com",
+    "userPassword": "Bulbul@123",
+    "expectedResult": "failure",
+    "statusCode": 400,
+    "errorMsg": "Incorrect email or password.",
+    "description": "Login with invalid email should fail"
+  },
+  {
+    "testScenario": "Invalid Password", 
+    "userEmail": "av1234@gmail.com",
+    "userPassword": "wrongpassword",
+    "expectedResult": "failure", 
+    "statusCode": 400,
+    "errorMsg": "Incorrect email or password.",
+    "description": "Login with invalid password should fail"
+  },
+  {
+    "testScenario": "Empty Email",
+    "userEmail": "",
+    "userPassword": "Bulbul@123",
+    "expectedResult": "failure",
+    "statusCode": 400,
+    "errorMsg": "Enter a valid email",
+    "description": "Login with empty email should fail"
+  },
+  {
+    "testScenario": "Empty Password",
+    "userEmail": "av1234@gmail.com", 
+    "userPassword": "",
+    "expectedResult": "failure",
+    "statusCode": 400,
+    "errorMsg": "Password is required",
+    "description": "Login with empty password should fail"
+  }
+] 
