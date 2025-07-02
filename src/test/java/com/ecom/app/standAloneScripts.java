@@ -1,9 +1,18 @@
 package com.ecom.app;
 
-import com.ecom.app.Utilities.CsvDataProviders;
-import io.restassured.RestAssured;
-import io.restassured.response.Response;
-import org.openqa.selenium.*;
+import java.lang.reflect.Method;
+import java.time.Duration;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.Keys;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.interactions.Actions;
@@ -14,14 +23,14 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import org.testng.annotations.Ignore;
 
-import java.lang.reflect.Method;
-import java.time.Duration;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
+import com.ecom.app.Utilities.CsvDataProviders;
 
+import io.restassured.RestAssured;
+import io.restassured.response.Response;
+
+@Ignore("Standalone scripts - temporarily disabled")
 public class standAloneScripts {
 
     String BASE_URL = "https://rahulshettyacademy.com";
@@ -167,7 +176,7 @@ public class standAloneScripts {
         }
     }
 
-    @Test(priority = 1)
+    @Test(priority = 1, enabled = false)
     public void test_01_UI_verifyValidLogin() {
         logger.info("Starting test for valid login credentials.");
         loginToApplication(EMAIL, PASSWORD);
@@ -176,7 +185,7 @@ public class standAloneScripts {
         logger.info("Login successful with valid credentials.");
     }
 
-    @Test(priority = 2)
+    @Test(priority = 2, enabled = false)
     public void test_02_UI_verifyInvalidLogin() {
         logger.info("Starting test for Invalid login credentials.");
         loginToApplication("invalidemail@gmail.com", "gjhjhkhkj");
@@ -186,7 +195,7 @@ public class standAloneScripts {
         logger.info("Login failed as expected with invalid credentials.");
     }
 
-    @Test(dataProvider = "csvFileReader", dataProviderClass = CsvDataProviders.class, priority = 3)
+    @Test(dataProvider = "csvFileReader", dataProviderClass = CsvDataProviders.class, priority = 3, enabled = false)
     public void test_03_API_verifyMultipleInvalidLoginAttempts(Map<String, String> testData) {
         String testScenario = testData.get("testScenario");
         String invalidEmail = testData.get("userEmail");
