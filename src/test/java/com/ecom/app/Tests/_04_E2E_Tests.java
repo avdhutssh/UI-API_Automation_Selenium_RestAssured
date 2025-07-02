@@ -1,15 +1,22 @@
 package com.ecom.app.Tests;
 
-import com.ecom.app.BaseComponents.BaseTest;
-import com.ecom.app.constants.StatusCode;
-import com.ecom.app.utils.AllureReportUtils;
-import io.qameta.allure.*;
-import io.restassured.response.Response;
+import java.util.List;
+import java.util.Map;
+
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.util.List;
-import java.util.Map;
+import com.ecom.app.BaseComponents.BaseTest;
+import com.ecom.app.constants.StatusCode;
+import com.ecom.app.utils.AllureReportUtils;
+
+import io.qameta.allure.Description;
+import io.qameta.allure.Epic;
+import io.qameta.allure.Feature;
+import io.qameta.allure.Severity;
+import io.qameta.allure.SeverityLevel;
+import io.qameta.allure.Story;
+import io.restassured.response.Response;
 
 @Epic("End-to-End Tests")
 @Feature("Complete Order Flow")
@@ -32,11 +39,11 @@ public class _04_E2E_Tests extends BaseTest {
         cartPage.proceedToCheckout();
         Assert.assertTrue(checkoutPage.isCheckoutPageLoaded(), "Checkout page should be loaded");
         checkoutPage.completeCheckout(COUNTRY_NAME, "4242424242424242", "123", "Test User");
-        
+
         createdOrderId = orderConfirmationPage.getOrderConfirmationDetails();
         Assert.assertFalse(createdOrderId.isEmpty(), "Order ID should not be empty");
         AllureReportUtils.logTestData("Order ID", createdOrderId);
-        
+
         boolean orderInHistory = orderConfirmationPage.verifyOrderInHistory(createdOrderId);
         Assert.assertTrue(orderInHistory, "Order should be present in order history");
     }
@@ -88,4 +95,4 @@ public class _04_E2E_Tests extends BaseTest {
         AllureReportUtils.logTestData("Verified Order ID", createdOrderId);
         AllureReportUtils.logTestData("Total Orders Found", String.valueOf(orders.size()));
     }
-} 
+}

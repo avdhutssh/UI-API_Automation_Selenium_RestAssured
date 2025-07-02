@@ -1,5 +1,9 @@
 package com.ecom.app.Utilities;
 
+import java.time.Duration;
+import java.util.Collections;
+import java.util.logging.Logger;
+
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -8,10 +12,6 @@ import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.safari.SafariDriver;
-
-import java.time.Duration;
-import java.util.Collections;
-import java.util.logging.Logger;
 
 /**
  * Factory class for creating and configuring WebDriver instances
@@ -181,4 +181,4 @@ public class BrowserDriverFactory {
     public static boolean isDriverInitialized() {
         return driverThreadLocal.get() != null;
     }
-} 
+}

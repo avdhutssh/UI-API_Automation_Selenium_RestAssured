@@ -1,8 +1,9 @@
 package com.ecom.app.PageObjects;
 
-import com.ecom.app.Utilities.ElementUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+
+import com.ecom.app.Utilities.ElementUtils;
 
 public class LoginPage extends ElementUtils {
 
@@ -37,8 +38,9 @@ public class LoginPage extends ElementUtils {
         String password = getProperty("password");
         logger.info("Using default credentials from config");
         loginToApplication(email, password);
-        if (isUserLoggedIn())
-            logger.info("Login successful for user: " + email);
+        if (isUserLoggedIn()) {
+			logger.info("Login successful for user: " + email);
+		}
     }
 
     public boolean isUserLoggedIn() {
@@ -64,4 +66,4 @@ public class LoginPage extends ElementUtils {
         return error;
     }
 
-} 
+}

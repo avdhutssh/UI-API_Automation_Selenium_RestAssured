@@ -1,15 +1,17 @@
 package com.ecom.app.generic;
 
-import com.ecom.app.constants.Endpoints;
-import com.ecom.app.utils.AllureReportUtils;
-import io.qameta.allure.Step;
-import io.restassured.response.Response;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.ecom.app.constants.Endpoints;
+import com.ecom.app.utils.AllureReportUtils;
+
+import io.qameta.allure.Step;
+import io.restassured.response.Response;
 
 public class RequestFactory {
     private static final Logger log = LogManager.getLogger(RequestFactory.class);
@@ -66,7 +68,7 @@ public class RequestFactory {
         Map<String, String> orderItem = new HashMap<>();
         orderItem.put("country", country);
         orderItem.put("productOrderedId", productId);
-        
+
         orderPayload.put("orders", new Map[]{orderItem});
 
         return restClient.doPostRequest(Endpoints.CREATE_ORDER, orderPayload, authToken);
@@ -150,30 +152,30 @@ public class RequestFactory {
     public void cleanupAllOrdersForCustomer() {
         log.info("Starting cleanup of all orders for customer: {}", userId);
         AllureReportUtils.logStep("Starting test data cleanup for customer: " + userId);
-        
+
         try {
             Response ordersResponse = getOrdersForCustomer(userId);
-            
+
             if (ordersResponse.statusCode() != 200) {
                 log.warn("Failed to fetch orders for cleanup. Status: {}", ordersResponse.statusCode());
                 AllureReportUtils.logStep("⚠️ Could not fetch orders for cleanup - skipping");
                 return;
             }
-            
+
             List<Map<String, Object>> orders = ordersResponse.jsonPath().getList("data");
-            
+
             if (orders == null || orders.isEmpty()) {
                 log.info("✅ No orders found - cleanup not needed");
                 AllureReportUtils.logStep("✅ No orders found - cleanup not needed");
                 return;
             }
-            
+
             log.info("Found {} orders to cleanup", orders.size());
             AllureReportUtils.logTestData("Orders found", String.valueOf(orders.size()));
-            
+
             for (Map<String, Object> order : orders) {
                 String orderIdToDelete = (String) order.get("_id");
-                
+
                 try {
                     deleteOrder(orderIdToDelete);
                     log.debug("Attempted to delete order: {}", orderIdToDelete);
@@ -181,25 +183,25 @@ public class RequestFactory {
                     log.warn("Could not delete order {}: {}", orderIdToDelete, e.getMessage());
                 }
             }
-            
+
             verifyCleanupSuccess();
-            
+
         } catch (Exception e) {
             log.error("Error during cleanup process: {}", e.getMessage());
             AllureReportUtils.logError("Cleanup process error", e);
         }
     }
-    
+
     private void verifyCleanupSuccess() {
         try {
             Thread.sleep(1000);
-            
+
             Response ordersResponse = getOrdersForCustomer(userId);
-            
+
             if (ordersResponse.statusCode() == 200) {
                 List<Map<String, Object>> remainingOrders = ordersResponse.jsonPath().getList("data");
                 int remainingCount = (remainingOrders == null) ? 0 : remainingOrders.size();
-                
+
                 if (remainingCount == 0) {
                     log.info("✅ Cleanup successful - 0 orders remaining");
                     AllureReportUtils.logStep("✅ Cleanup successful - 0 orders remaining");
@@ -207,14 +209,14 @@ public class RequestFactory {
                     log.warn("⚠️ Cleanup incomplete - {} orders still remaining", remainingCount);
                     AllureReportUtils.logStep("⚠️ Cleanup incomplete - " + remainingCount + " orders still remaining");
                 }
-                
+
                 AllureReportUtils.logTestData("Final orders count", String.valueOf(remainingCount));
             } else {
                 log.warn("Could not verify cleanup - unable to fetch final orders count");
             }
-            
+
         } catch (Exception e) {
             log.warn("Could not verify cleanup results: {}", e.getMessage());
         }
     }
-} 
+}

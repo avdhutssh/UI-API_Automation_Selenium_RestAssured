@@ -1,13 +1,17 @@
 package com.ecom.app.Utilities;
 
-import org.openqa.selenium.*;
+import java.util.List;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
+import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.Select;
 
-import java.util.List;
-
 public class ElementUtils extends BasePage {
-    
+
     protected Actions actions;
 
     protected ElementUtils(WebDriver driver) {
@@ -88,7 +92,7 @@ public class ElementUtils extends BasePage {
     protected void enterCharacterByCharacter(By locator, String text, int delayMs) {
         WebElement element = waitForElementToBeVisible(locator);
         element.clear();
-        
+
         for (char c : text.toCharArray()) {
             element.sendKeys(String.valueOf(c));
             try {
@@ -226,4 +230,4 @@ public class ElementUtils extends BasePage {
         logger.info("Retrieved " + elements.size() + " elements for: " + locator);
         return elements;
     }
-} 
+}

@@ -1,10 +1,11 @@
 package com.ecom.app.utils;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import io.qameta.allure.Allure;
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Utility class for Allure reporting with ecom API testing
@@ -54,11 +55,11 @@ public class AllureReportUtils {
 
     @Step("Log error details")
     public static void logError(String errorMessage, Exception exception) {
-        String errorDetails = String.format("Error: %s\nException: %s\nStack Trace: %s", 
-                errorMessage, 
+        String errorDetails = String.format("Error: %s\nException: %s\nStack Trace: %s",
+                errorMessage,
                 exception.getClass().getSimpleName(),
                 exception.getMessage());
         log.error("Test Error - {}", errorMessage, exception);
         Allure.addAttachment("Error Details", "text/plain", errorDetails);
     }
-} 
+}

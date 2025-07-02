@@ -1,9 +1,5 @@
 package com.ecom.app.Utilities;
 
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.TakesScreenshot;
-import org.openqa.selenium.WebDriver;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,19 +9,23 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.logging.Logger;
 
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.WebDriver;
+
 /**
  * Utility class for taking and managing screenshots
  */
 public class ScreenshotUtils {
-    
+
     private static final Logger logger = Logger.getLogger(ScreenshotUtils.class.getName());
     private static final String SCREENSHOT_DIR = "screenshots";
     private static final DateTimeFormatter TIMESTAMP_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
-    
+
     static {
         createScreenshotDirectory();
     }
-    
+
     /**
      * Create screenshot directory if it doesn't exist
      */
@@ -40,7 +40,7 @@ public class ScreenshotUtils {
             logger.severe("Failed to create screenshot directory: " + e.getMessage());
         }
     }
-    
+
     /**
      * Take screenshot and return as byte array
      * @param driver WebDriver instance
@@ -57,7 +57,7 @@ public class ScreenshotUtils {
             return new byte[0];
         }
     }
-    
+
     /**
      * Take screenshot and save to file
      * @param driver WebDriver instance
@@ -68,13 +68,13 @@ public class ScreenshotUtils {
         try {
             TakesScreenshot takesScreenshot = (TakesScreenshot) driver;
             File sourceFile = takesScreenshot.getScreenshotAs(OutputType.FILE);
-            
+
             String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMAT);
             String fileName = String.format("%s_%s.png", testName, timestamp);
             Path destinationPath = Paths.get(SCREENSHOT_DIR, fileName);
-            
+
             Files.copy(sourceFile.toPath(), destinationPath);
-            
+
             String screenshotPath = destinationPath.toString();
             logger.info("Screenshot saved: " + screenshotPath);
             return screenshotPath;
@@ -83,7 +83,7 @@ public class ScreenshotUtils {
             return "";
         }
     }
-    
+
     /**
      * Take screenshot on failure and save to file
      * @param driver WebDriver instance
@@ -94,13 +94,13 @@ public class ScreenshotUtils {
         try {
             TakesScreenshot takesScreenshot = (TakesScreenshot) driver;
             File sourceFile = takesScreenshot.getScreenshotAs(OutputType.FILE);
-            
+
             String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMAT);
             String fileName = String.format("FAILED_%s_%s.png", testName, timestamp);
             Path destinationPath = Paths.get(SCREENSHOT_DIR, fileName);
-            
+
             Files.copy(sourceFile.toPath(), destinationPath);
-            
+
             String screenshotPath = destinationPath.toString();
             logger.info("Failure screenshot saved: " + screenshotPath);
             return screenshotPath;
@@ -109,7 +109,7 @@ public class ScreenshotUtils {
             return "";
         }
     }
-    
+
     /**
      * Get screenshot directory path
      * @return Screenshot directory path
@@ -117,7 +117,7 @@ public class ScreenshotUtils {
     public static String getScreenshotDirectory() {
         return SCREENSHOT_DIR;
     }
-    
+
     /**
      * Clean up old screenshots (older than specified days)
      * @param daysToKeep Number of days to keep screenshots
@@ -128,9 +128,9 @@ public class ScreenshotUtils {
             if (!Files.exists(screenshotPath)) {
                 return;
             }
-            
+
             long cutoffTime = System.currentTimeMillis() - (daysToKeep * 24 * 60 * 60 * 1000L);
-            
+
             Files.list(screenshotPath)
                     .filter(Files::isRegularFile)
                     .filter(path -> path.toString().endsWith(".png"))
@@ -150,10 +150,10 @@ public class ScreenshotUtils {
                             logger.warning("Failed to delete old screenshot: " + path + ", Error: " + e.getMessage());
                         }
                     });
-            
+
             logger.info("Completed cleanup of screenshots older than " + daysToKeep + " days");
         } catch (IOException e) {
             logger.severe("Failed to cleanup old screenshots: " + e.getMessage());
         }
     }
-} 
+}

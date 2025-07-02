@@ -1,12 +1,19 @@
 package com.ecom.app.Tests;
 
-import com.ecom.app.BaseComponents.BaseTest;
-import com.ecom.app.utils.AllureReportUtils;
-import io.qameta.allure.*;
+import java.util.List;
+
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.util.List;
+import com.ecom.app.BaseComponents.BaseTest;
+import com.ecom.app.utils.AllureReportUtils;
+
+import io.qameta.allure.Description;
+import io.qameta.allure.Epic;
+import io.qameta.allure.Feature;
+import io.qameta.allure.Severity;
+import io.qameta.allure.SeverityLevel;
+import io.qameta.allure.Story;
 
 @Epic("Cart Management Tests")
 @Feature("Cart Functionality")
@@ -105,4 +112,4 @@ public class _03_Cart_Tests extends BaseTest {
         Assert.assertTrue(cartPage.isCartEmpty(), "Cart should be empty after clearing all items");
     }
 
-} 
+}

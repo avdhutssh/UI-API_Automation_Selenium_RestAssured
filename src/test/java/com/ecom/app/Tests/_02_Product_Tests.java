@@ -1,12 +1,19 @@
 package com.ecom.app.Tests;
 
-import com.ecom.app.BaseComponents.BaseTest;
-import com.ecom.app.utils.AllureReportUtils;
-import io.qameta.allure.*;
+import java.util.List;
+
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.util.List;
+import com.ecom.app.BaseComponents.BaseTest;
+import com.ecom.app.utils.AllureReportUtils;
+
+import io.qameta.allure.Description;
+import io.qameta.allure.Epic;
+import io.qameta.allure.Feature;
+import io.qameta.allure.Severity;
+import io.qameta.allure.SeverityLevel;
+import io.qameta.allure.Story;
 
 @Epic("Product Management Tests")
 @Feature("Product Functionality")
@@ -85,4 +92,4 @@ public class _02_Product_Tests extends BaseTest {
         productPage.searchAndAddProductToCart(PRODUCT_NAME);
         Assert.assertTrue(productPage.isProductDisplayed("ZARA"), "ZARA product should be displayed after search");
     }
-} 
+}

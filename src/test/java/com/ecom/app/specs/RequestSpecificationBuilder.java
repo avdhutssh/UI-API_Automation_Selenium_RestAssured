@@ -1,14 +1,16 @@
 package com.ecom.app.specs;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.ecom.app.utils.AllureRestAssuredFilter;
+
 import io.qameta.allure.restassured.AllureRestAssured;
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class RequestSpecificationBuilder {
     private static final Logger log = LogManager.getLogger(RequestSpecificationBuilder.class);
@@ -61,4 +63,4 @@ public class RequestSpecificationBuilder {
                 .build();
     }
 
-} 
+}

@@ -1,15 +1,22 @@
 package com.ecom.app.Tests;
 
+import java.util.Map;
+
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
 import com.ecom.app.BaseComponents.BaseTest;
 import com.ecom.app.Utilities.CsvDataProviders;
 import com.ecom.app.constants.StatusCode;
 import com.ecom.app.utils.AllureReportUtils;
-import io.qameta.allure.*;
-import io.restassured.response.Response;
-import org.testng.Assert;
-import org.testng.annotations.Test;
 
-import java.util.Map;
+import io.qameta.allure.Description;
+import io.qameta.allure.Epic;
+import io.qameta.allure.Feature;
+import io.qameta.allure.Severity;
+import io.qameta.allure.SeverityLevel;
+import io.qameta.allure.Story;
+import io.restassured.response.Response;
 
 @Epic("Authentication Tests")
 @Feature("Login Functionality")
@@ -85,4 +92,4 @@ public class _01_Login_Tests extends BaseTest {
         Assert.assertTrue(response.time() < 5000, "API login response time should be less than 5 seconds");
         Assert.assertEquals(response.statusCode(), StatusCode.OK.getCode(), "Login should be successful");
     }
-} 
+}

@@ -31,4 +31,4 @@ public class Endpoints {
     private Endpoints() {
         // Private constructor to prevent instantiation
     }
-} 
+}

@@ -1,8 +1,5 @@
 package com.ecom.app.Utilities;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,14 +10,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  * Utility class for reading JSON test data files
  */
 public class JSONDataReader {
-    
+
     private static final Logger logger = Logger.getLogger(JSONDataReader.class.getName());
     private static final ObjectMapper objectMapper = new ObjectMapper();
-    
+
     /**
      * Read JSON file and return as Map
      * @param filePath Path to JSON file
@@ -33,7 +33,7 @@ public class JSONDataReader {
                 logger.severe("JSON file not found: " + filePath);
                 return new HashMap<>();
             }
-            
+
             Map<String, Object> jsonData = objectMapper.readValue(file, Map.class);
             logger.info("JSON file read successfully: " + filePath);
             return jsonData;
@@ -42,7 +42,7 @@ public class JSONDataReader {
             return new HashMap<>();
         }
     }
-    
+
     /**
      * Read JSON file and return as List of Maps (for test data arrays)
      * @param filePath Path to JSON file
@@ -55,7 +55,7 @@ public class JSONDataReader {
                 logger.severe("JSON file not found: " + filePath);
                 return new ArrayList<>();
             }
-            
+
             List<Map<String, Object>> jsonData = objectMapper.readValue(file, List.class);
             logger.info("JSON file read successfully as list: " + filePath);
             return jsonData;
@@ -64,7 +64,7 @@ public class JSONDataReader {
             return new ArrayList<>();
         }
     }
-    
+
     /**
      * Read JSON file and return as specific POJO class
      * @param filePath Path to JSON file
@@ -79,7 +79,7 @@ public class JSONDataReader {
                 logger.severe("JSON file not found: " + filePath);
                 return null;
             }
-            
+
             T jsonObject = objectMapper.readValue(file, clazz);
             logger.info("JSON file read successfully as object: " + filePath);
             return jsonObject;
@@ -88,7 +88,7 @@ public class JSONDataReader {
             return null;
         }
     }
-    
+
     /**
      * Read JSON file content as string
      * @param filePath Path to JSON file
@@ -104,7 +104,7 @@ public class JSONDataReader {
             return "";
         }
     }
-    
+
     /**
      * Get specific value from JSON file using JSON path
      * @param filePath Path to JSON file
@@ -118,11 +118,11 @@ public class JSONDataReader {
                 logger.severe("JSON file not found: " + filePath);
                 return null;
             }
-            
+
             JsonNode rootNode = objectMapper.readTree(file);
             String[] pathParts = jsonPath.split("\\.");
             JsonNode currentNode = rootNode;
-            
+
             for (String part : pathParts) {
                 if (currentNode.isArray()) {
                     try {
@@ -135,20 +135,20 @@ public class JSONDataReader {
                 } else {
                     currentNode = currentNode.get(part);
                 }
-                
+
                 if (currentNode == null) {
                     logger.warning("Path not found in JSON: " + jsonPath);
                     return null;
                 }
             }
-            
+
             return currentNode.isTextual() ? currentNode.asText() : currentNode;
         } catch (IOException e) {
             logger.severe("Error reading JSON path: " + jsonPath + " from file: " + filePath + ", Error: " + e.getMessage());
             return null;
         }
     }
-    
+
     /**
      * Convert object to JSON string
      * @param object Object to convert
@@ -164,7 +164,7 @@ public class JSONDataReader {
             return "";
         }
     }
-    
+
     /**
      * Convert object to formatted JSON string
      * @param object Object to convert
@@ -180,4 +180,4 @@ public class JSONDataReader {
             return "";
         }
     }
-} 
+}

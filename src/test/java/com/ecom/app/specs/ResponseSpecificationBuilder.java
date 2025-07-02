@@ -1,13 +1,14 @@
 package com.ecom.app.specs;
 
-import io.restassured.builder.ResponseSpecBuilder;
-import io.restassured.http.ContentType;
-import io.restassured.specification.ResponseSpecification;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hamcrest.Matchers;
 
-import java.util.concurrent.TimeUnit;
+import io.restassured.builder.ResponseSpecBuilder;
+import io.restassured.http.ContentType;
+import io.restassured.specification.ResponseSpecification;
 
 public class ResponseSpecificationBuilder {
     private static final Logger log = LogManager.getLogger(ResponseSpecificationBuilder.class);
@@ -116,4 +117,4 @@ public class ResponseSpecificationBuilder {
                 .expectResponseTime(Matchers.lessThan(15000L), TimeUnit.MILLISECONDS)
                 .build();
     }
-} 
+}

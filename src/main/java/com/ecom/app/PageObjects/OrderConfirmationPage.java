@@ -1,12 +1,13 @@
 package com.ecom.app.PageObjects;
 
-import com.ecom.app.Utilities.ElementUtils;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import com.ecom.app.Utilities.ElementUtils;
 
 public class OrderConfirmationPage extends ElementUtils {
 
@@ -25,10 +26,10 @@ public class OrderConfirmationPage extends ElementUtils {
 
     public String getOrderConfirmationDetails() {
         logger.info("Getting order confirmation details");
-        
+
         String confirmationMessage = getText(confirmationHeader);
         String orderId = getOrderId();
-        
+
         logger.info("Order confirmation - Message: " + confirmationMessage + ", Order ID: " + orderId);
         return orderId;
     }
@@ -46,10 +47,10 @@ public class OrderConfirmationPage extends ElementUtils {
 
     public boolean verifyOrderInHistory(String expectedOrderId) {
         logger.info("Verifying order in history: " + expectedOrderId);
-        
+
         navigateToOrderHistory();
         boolean orderExists = isOrderPresentInHistory(expectedOrderId);
-        
+
         logger.info("Order verification result for " + expectedOrderId + ": " + orderExists);
         return orderExists;
     }
@@ -67,7 +68,7 @@ public class OrderConfirmationPage extends ElementUtils {
             logger.warning("Order history page not loaded");
             return false;
         }
-        
+
         List<WebElement> orderElements = getElements(orderIds);
         for (WebElement orderElement : orderElements) {
             String orderText = orderElement.getText().trim();
@@ -76,7 +77,7 @@ public class OrderConfirmationPage extends ElementUtils {
                 return true;
             }
         }
-        
+
         logger.warning("Order not found in history: " + orderId);
         return false;
     }
@@ -86,24 +87,24 @@ public class OrderConfirmationPage extends ElementUtils {
             logger.warning("Order history page not loaded, returning empty list");
             return List.of();
         }
-        
+
         List<WebElement> orderElements = getElements(orderIds);
         List<String> orderIds = orderElements.stream()
                 .map(element -> element.getText().trim())
                 .collect(Collectors.toList());
-        
+
         logger.info("Retrieved " + orderIds.size() + " order IDs: " + orderIds);
         return orderIds;
     }
 
     public void deleteOrderFromHistory(String orderId) {
         logger.info("Deleting order from history: " + orderId);
-        
+
         if (!isElementDisplayed(orderHistoryHeader)) {
             logger.warning("Order history page not loaded");
             return;
         }
-        
+
         By deleteButton = By.xpath("//th[text()='" + orderId + "']/..//button[contains(text(),'Delete')]");
         if (isElementDisplayed(deleteButton)) {
             clickOnElement(deleteButton);
@@ -112,4 +113,4 @@ public class OrderConfirmationPage extends ElementUtils {
             logger.warning("Delete button not found for order: " + orderId);
         }
     }
-} 
+}

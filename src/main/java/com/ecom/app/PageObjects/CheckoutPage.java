@@ -1,8 +1,9 @@
 package com.ecom.app.PageObjects;
 
-import com.ecom.app.Utilities.ElementUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+
+import com.ecom.app.Utilities.ElementUtils;
 
 public class CheckoutPage extends ElementUtils {
 
@@ -59,4 +60,4 @@ public class CheckoutPage extends ElementUtils {
         logger.info("Checkout page loaded: " + isLoaded);
         return isLoaded;
     }
-} 
+}

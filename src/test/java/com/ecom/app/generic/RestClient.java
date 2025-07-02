@@ -1,17 +1,19 @@
 package com.ecom.app.generic;
 
+import java.util.Map;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.ecom.app.specs.RequestSpecificationBuilder;
 import com.ecom.app.specs.ResponseSpecificationBuilder;
 import com.ecom.app.utils.AllureReportUtils;
+
 import io.qameta.allure.Step;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import java.util.Map;
 
 public class RestClient {
     private static final Logger log = LogManager.getLogger(RestClient.class);
@@ -173,4 +175,4 @@ public class RestClient {
         AllureReportUtils.logResponse(response);
         return response;
     }
-} 
+}

@@ -1,12 +1,13 @@
 package com.ecom.app.PageObjects;
 
-import com.ecom.app.Utilities.ElementUtils;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import com.ecom.app.Utilities.ElementUtils;
 
 public class CartPage extends ElementUtils {
 
@@ -112,4 +113,4 @@ public class CartPage extends ElementUtils {
 
         logger.info("All items cleared from cart");
     }
-} 
+}

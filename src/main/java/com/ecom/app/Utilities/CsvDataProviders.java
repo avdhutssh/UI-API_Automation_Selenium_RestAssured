@@ -1,16 +1,21 @@
 package com.ecom.app.Utilities;
 
-import com.opencsv.CSVReader;
-import com.opencsv.exceptions.CsvValidationException;
-import org.testng.annotations.DataProvider;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
+
+import org.testng.annotations.DataProvider;
+
+import com.opencsv.CSVReader;
+import com.opencsv.exceptions.CsvValidationException;
 
 public class CsvDataProviders {
     static Logger logger = Logger.getLogger(CsvDataProviders.class.getName());
@@ -18,7 +23,7 @@ public class CsvDataProviders {
     @DataProvider(name = "csvFileReader")
     public static Iterator<Object[]> csvReader(Method method) {
         logger.info("Reading data from CSV file for method: " + method.getName());
-        List<Object[]> list = new ArrayList<Object[]>();
+        List<Object[]> list = new ArrayList<>();
         String pathName = "src" + File.separator + "test" + File.separator + "resources" + File.separator
                 + "TestData" + File.separator + method.getDeclaringClass().getSimpleName() + File.separator
                 + method.getName() + ".csv";

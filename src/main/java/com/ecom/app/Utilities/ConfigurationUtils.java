@@ -7,7 +7,7 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 public class ConfigurationUtils {
-    
+
     private static final Logger log = Logger.getLogger(ConfigurationUtils.class.getName());
     private static final Properties prop = new Properties();
     private static final String CONFIG_FILE_PATH = System.getProperty("user.dir") + File.separator + "src" + File.separator + "main" + File.separator + "resources" + File.separator + "config.properties";
@@ -40,12 +40,12 @@ public class ConfigurationUtils {
             log.severe("Failed to load properties file: " + e.getMessage());
         }
     }
-    
+
     public static String getPropertyStatic(String key) {
         return getInstance().getProperty(key);
     }
-    
+
     public static String getPropertyStatic(String key, String defaultValue) {
         return getInstance().getProperty(key, defaultValue);
     }
-} 
+}
