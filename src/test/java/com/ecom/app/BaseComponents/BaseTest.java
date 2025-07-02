@@ -30,7 +30,6 @@ public class BaseTest {
     protected CheckoutPage checkoutPage;
     protected OrderConfirmationPage orderConfirmationPage;
 
-    // Enhanced API components
     protected RequestFactory requestFactory;
     protected String authToken;
     protected String userId;
@@ -41,8 +40,6 @@ public class BaseTest {
     protected final String PASSWORD = ConfigurationUtils.getInstance().getProperty("password");
     protected final String PRODUCT_NAME = ConfigurationUtils.getInstance().getProperty("productName", "ZARA COAT 3");
     protected final String COUNTRY_NAME = ConfigurationUtils.getInstance().getProperty("countryName", "India");
-
-    protected String orderId;
 
     @BeforeSuite
     public void suiteSetup() {
@@ -121,63 +118,17 @@ public class BaseTest {
     @AfterSuite
     public void suiteTearDown() {
         logger.info("=== Test Suite Teardown Started ===");
-
-        try {
-            if (requestFactory != null) {
-                AllureReportUtils.logStep("Starting test data cleanup");
-                
-                Response ordersResponse = requestFactory.getOrdersForCustomer(userId);
-
-                if (ordersResponse.statusCode() == 200) {
-                    List<Map<String, Object>> orders = ordersResponse.jsonPath().getList("data");
-
-                    if (orders != null && !orders.isEmpty()) {
-                        logger.info("Found " + orders.size() + " orders to cleanup");
-                        AllureReportUtils.logTestData("Orders to cleanup", String.valueOf(orders.size()));
-
-                        for (Map<String, Object> order : orders) {
-                            String orderIdToDelete = (String) order.get("_id");
-                            Response deleteResponse = requestFactory.deleteOrder(orderIdToDelete);
-                            if (deleteResponse.statusCode() == 200) {
-                                logger.info("Deleted order: " + orderIdToDelete);
-                            }
-                        }
-                        
-                        AllureReportUtils.logStep("Test data cleanup completed successfully");
-                    } else {
-                        logger.info("No orders found for cleanup");
-                        AllureReportUtils.logStep("No test data cleanup required");
-                    }
-                } else {
-                    logger.warning("Failed to fetch orders for cleanup. Status: " + ordersResponse.statusCode());
-                }
-            }
-
-            logger.info("Test data cleanup completed");
-        } catch (Exception e) {
-            logger.warning("Error during test data cleanup: " + e.getMessage());
-            AllureReportUtils.logError("Cleanup error", e);
+        
+        if (requestFactory != null) {
+            requestFactory.cleanupAllOrdersForCustomer();
         }
-
+        
         RestAssured.reset();
         logger.info("=== Test Suite Teardown Completed ===");
     }
 
-    protected void setOrderId(String orderId) {
-        this.orderId = orderId;
-        logger.info("Order ID set: " + orderId);
-    }
-
-    protected String getOrderId() {
-        return this.orderId;
-    }
-
     protected RequestFactory getRequestFactory() {
         return requestFactory;
-    }
-
-    protected String getAuthToken() {
-        return authToken;
     }
 
     protected String getUserId() {
